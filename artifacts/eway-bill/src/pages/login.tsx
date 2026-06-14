@@ -8,8 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const loginSchema = z.object({
@@ -120,26 +118,6 @@ export default function LoginPage() {
                 </Button>
               </form>
             </Form>
-
-            <Collapsible className="mt-6 border-t pt-4">
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" className="w-full justify-between text-muted-foreground" size="sm">
-                  <span className="flex items-center gap-2">
-                    <Shield className="h-4 w-4" />
-                    Super Admin Access
-                  </span>
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pt-4 text-sm text-muted-foreground bg-muted/50 p-3 rounded-md mt-2">
-                <p>To login as super admin, use:</p>
-                <ul className="mt-2 space-y-1 list-disc list-inside pl-4">
-                  <li>Company Code: <span className="font-mono text-foreground">bhullar</span></li>
-                  <li>Username: <span className="font-mono text-foreground">bhullar01</span></li>
-                  <li>Password: <span className="font-mono text-foreground">Bhullar_01</span></li>
-                </ul>
-              </CollapsibleContent>
-            </Collapsible>
           </CardContent>
         </Card>
       </div>
