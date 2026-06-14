@@ -16,17 +16,21 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-runMigrationsAndSeed()
-  .then(() => {
-    app.listen(port, (err) => {
-      if (err) {
-        logger.error({ err }, "Error listening on port");
-        process.exit(1);
-      }
-      logger.info({ port }, "Server listening");
-    });
-  })
-  .catch((err) => {
-    logger.error({ err }, "Failed to run migrations — aborting startup");
+// Start listening immediately so health checks pass on Render
+app.listen(port, (err) => {
+  if (err) {
+    logger.error({ err }, "Error listening on port");
     process.exit(1);
-  });
+  }
+
+  logger.info({ port }, "Server listening — running migrations in background");
+
+  // Run migrations after server is up so health checks pass
+  runMigrationsAndSeed()
+    .then(() => {
+      logger.info("Migrations complete — server fully ready");
+    })
+    .catch((err) => {
+      logger.error({ err }, "Migration failed — server still running but DB may be uninitialized");
+    });
+});
