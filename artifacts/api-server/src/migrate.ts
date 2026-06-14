@@ -1,12 +1,13 @@
 import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
-import { companiesTable, usersTable, ewaybillsTable } from "@workspace/db";
+import { companiesTable, usersTable } from "@workspace/db";
 import bcrypt from "bcryptjs";
 import { logger } from "./lib/logger";
 
 export async function runMigrationsAndSeed() {
   logger.info("Running startup migrations...");
 
+  // ── companies ──────────────────────────────────────────────────────────────
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS companies (
       id SERIAL PRIMARY KEY,
@@ -21,7 +22,17 @@ export async function runMigrationsAndSeed() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
+  // Ensure all columns exist even if the table already existed from another app
+  await db.execute(sql`ALTER TABLE companies ADD COLUMN IF NOT EXISTS gstin TEXT`);
+  await db.execute(sql`ALTER TABLE companies ADD COLUMN IF NOT EXISTS contact_email TEXT`);
+  await db.execute(sql`ALTER TABLE companies ADD COLUMN IF NOT EXISTS contact_phone TEXT`);
+  await db.execute(sql`ALTER TABLE companies ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE`);
+  await db.execute(sql`ALTER TABLE companies ADD COLUMN IF NOT EXISTS address TEXT`);
+  await db.execute(sql`ALTER TABLE companies ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`);
+  await db.execute(sql`ALTER TABLE companies ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`);
+  logger.info("companies table ready");
 
+  // ── users ──────────────────────────────────────────────────────────────────
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
@@ -34,7 +45,15 @@ export async function runMigrationsAndSeed() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
+  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT`);
+  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS company_id INTEGER`);
+  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'company_user'`);
+  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE`);
+  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`);
+  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`);
+  logger.info("users table ready");
 
+  // ── ewaybills ──────────────────────────────────────────────────────────────
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS ewaybills (
       id SERIAL PRIMARY KEY,
@@ -82,17 +101,18 @@ export async function runMigrationsAndSeed() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
+  logger.info("ewaybills table ready");
 
-  logger.info("Tables created/verified");
+  logger.info("All tables verified");
 
-  // Seed super admin company + user if not present
+  // ── seed super admin ───────────────────────────────────────────────────────
   const existing = await db
     .select()
     .from(companiesTable)
     .where(sql`code = 'bhullar'`);
 
   if (existing.length === 0) {
-    const [company] = await db
+    const inserted = await db
       .insert(companiesTable)
       .values({
         code: "bhullar",
@@ -102,6 +122,7 @@ export async function runMigrationsAndSeed() {
       })
       .returning();
 
+    const company = inserted[0];
     const passwordHash = await bcrypt.hash("Bhullar_01", 10);
     await db.insert(usersTable).values({
       username: "bhullar01",
@@ -110,8 +131,7 @@ export async function runMigrationsAndSeed() {
       role: "super_admin",
       isActive: true,
     });
-
-    logger.info("Super admin seeded: bhullar01 / Bhullar_01");
+    logger.info("Super admin seeded: bhullar01");
   } else {
     logger.info("Super admin already exists — skipping seed");
   }
