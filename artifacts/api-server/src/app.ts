@@ -52,12 +52,21 @@ if (isProduction) {
   });
 }
 
-// Global error handler — returns JSON with error detail so we can diagnose issues
+// Global error handler — returns JSON with full error chain for diagnosis
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
-  const message = err instanceof Error ? err.message : String(err);
+  const e = err instanceof Error ? err : new Error(String(err));
+  const cause = e.cause instanceof Error ? e.cause.message : String(e.cause ?? "");
+  const causeOfCause = e.cause instanceof Error && e.cause.cause instanceof Error
+    ? e.cause.cause.message : "";
   const code = (err as NodeJS.ErrnoException)?.code;
-  logger.error({ err, message, code }, "Unhandled error");
-  res.status(500).json({ error: "Internal server error", detail: message, code });
+  logger.error({ err, cause, code }, "Unhandled error");
+  res.status(500).json({
+    error: "Internal server error",
+    detail: e.message,
+    cause,
+    causeOfCause,
+    code,
+  });
 });
 
 export default app;
