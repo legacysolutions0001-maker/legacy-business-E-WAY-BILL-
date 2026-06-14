@@ -10,11 +10,10 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-const isExternalRenderDb = process.env.DATABASE_URL.includes(".render.com");
-
+// Always allow unverified SSL certs — works for both Render internal and external URLs
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ...(isExternalRenderDb ? { ssl: { rejectUnauthorized: false } } : {}),
+  ssl: { rejectUnauthorized: false },
 });
 export const db = drizzle(pool, { schema });
 
