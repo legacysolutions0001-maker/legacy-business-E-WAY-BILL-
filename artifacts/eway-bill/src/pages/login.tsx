@@ -134,9 +134,9 @@ export default function LoginPage() {
               <CollapsibleContent className="pt-4 text-sm text-muted-foreground bg-muted/50 p-3 rounded-md mt-2">
                 <p>To login as super admin, use:</p>
                 <ul className="mt-2 space-y-1 list-disc list-inside pl-4">
-                  <li>Company Code: <span className="font-mono text-foreground">admin</span></li>
-                  <li>Username: <span className="font-mono text-foreground">admin</span></li>
-                  <li>Password: <span className="font-mono text-foreground">admin123</span></li>
+                  <li>Company Code: <span className="font-mono text-foreground">bhullar</span></li>
+                  <li>Username: <span className="font-mono text-foreground">bhullar01</span></li>
+                  <li>Password: <span className="font-mono text-foreground">Bhullar_01</span></li>
                 </ul>
               </CollapsibleContent>
             </Collapsible>

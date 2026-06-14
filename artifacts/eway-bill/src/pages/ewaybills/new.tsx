@@ -158,7 +158,7 @@ export default function NewEwaybillPage() {
                     <FormItem><FormLabel>State Code</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl><SelectTrigger><SelectValue placeholder="Select State"/></SelectTrigger></FormControl>
-                        <SelectContent>{INDIAN_STATES.map(s => <SelectItem key={`from-${s.code}`} value={s.code}>{s.code} - {s.name}</SelectItem>)}</SelectContent>
+                        <SelectContent className="max-h-60 overflow-y-auto">{INDIAN_STATES.map(s => <SelectItem key={`from-${s.code}`} value={s.code}>{s.code} - {s.name}</SelectItem>)}</SelectContent>
                       </Select>
                       <FormMessage />
                     </FormItem>
@@ -182,7 +182,7 @@ export default function NewEwaybillPage() {
                     <FormItem><FormLabel>State Code</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl><SelectTrigger><SelectValue placeholder="Select State"/></SelectTrigger></FormControl>
-                        <SelectContent>{INDIAN_STATES.map(s => <SelectItem key={`to-${s.code}`} value={s.code}>{s.code} - {s.name}</SelectItem>)}</SelectContent>
+                        <SelectContent className="max-h-60 overflow-y-auto">{INDIAN_STATES.map(s => <SelectItem key={`to-${s.code}`} value={s.code}>{s.code} - {s.name}</SelectItem>)}</SelectContent>
                       </Select>
                       <FormMessage />
                     </FormItem>
