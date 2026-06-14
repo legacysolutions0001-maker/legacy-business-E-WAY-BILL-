@@ -6,8 +6,9 @@ services:
     plan: free
     rootDir: .
     buildCommand: >-
-      npm install -g pnpm &&
-      pnpm install --frozen-lockfile &&
+      corepack enable &&
+      corepack prepare pnpm@10.26.1 --activate &&
+      pnpm install &&
       BASE_PATH=/ PORT=3000 pnpm --filter @workspace/eway-bill run build &&
       pnpm --filter @workspace/api-server run build
     startCommand: node --enable-source-maps artifacts/api-server/dist/index.mjs
