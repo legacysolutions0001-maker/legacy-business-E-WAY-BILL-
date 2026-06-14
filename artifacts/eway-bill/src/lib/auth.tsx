@@ -1,5 +1,5 @@
 import { createContext, useContext, ReactNode, useEffect, useState } from "react";
-import { useGetMe, useLogin, useLogout } from "@workspace/api-client-react";
+import { useGetMe, useLogin, useLogout, getGetMeQueryKey } from "@workspace/api-client-react";
 import { AuthUser, LoginInput } from "@workspace/api-client-react";
 import { useLocation } from "wouter";
 
@@ -17,6 +17,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [, setLocation] = useLocation();
   const { data: user, isLoading: isUserLoading, error } = useGetMe({
     query: {
+      queryKey: getGetMeQueryKey(),
       retry: false,
     }
   });
@@ -36,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await logoutMutation.mutateAsync({});
+    await logoutMutation.mutateAsync();
     window.location.href = "/login";
   };
 
