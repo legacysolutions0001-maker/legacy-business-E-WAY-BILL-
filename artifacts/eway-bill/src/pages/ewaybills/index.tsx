@@ -86,8 +86,8 @@ export default function EwaybillsPage() {
                     <TableCell className="truncate max-w-[150px]" title={bill.toTradeName}>{bill.toTradeName}</TableCell>
                     <TableCell className="text-right">{bill.totalValue.toLocaleString('en-IN')}</TableCell>
                     <TableCell>
-                      <Badge variant={bill.status === 'GENERATED' ? 'default' : 'secondary'}>
-                        {bill.status}
+                      <Badge variant={bill.status === 'active' ? 'default' : 'secondary'}>
+                        {bill.status === 'active' ? 'Active' : bill.status}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
