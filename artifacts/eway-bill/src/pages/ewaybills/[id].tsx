@@ -48,8 +48,8 @@ export default function EwaybillDetailPage({ id }: { id: string }) {
               <div className="text-sm text-muted-foreground font-medium uppercase tracking-widest">
                 EWB No: <span className="text-xl font-bold text-foreground font-mono ml-2 tracking-normal">{ewb.ewbNumber}</span>
               </div>
-              <Badge variant={ewb.status === 'GENERATED' ? 'default' : 'secondary'} className="text-xs uppercase tracking-wider">
-                {ewb.status}
+              <Badge variant={ewb.status === 'active' ? 'default' : 'secondary'} className="text-xs uppercase tracking-wider">
+                {ewb.status === 'active' ? 'Active' : ewb.status}
               </Badge>
             </div>
           </div>
@@ -57,8 +57,8 @@ export default function EwaybillDetailPage({ id }: { id: string }) {
           <div className="p-6 space-y-8">
             {/* Part A Header info */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm bg-muted/30 p-4 rounded-md border">
-              <div><span className="text-muted-foreground block text-xs">Generated Date</span> <span className="font-medium">{new Date(ewb.generatedDate).toLocaleString()}</span></div>
-              <div><span className="text-muted-foreground block text-xs">Valid Upto</span> <span className="font-medium">{new Date(ewb.validUpto).toLocaleString()}</span></div>
+              <div><span className="text-muted-foreground block text-xs">Generated Date</span> <span className="font-medium">{new Date(ewb.generatedDate).toLocaleDateString('en-IN')}</span></div>
+              <div><span className="text-muted-foreground block text-xs">Valid Upto</span> <span className="font-medium">{new Date(ewb.validUpto).toLocaleDateString('en-IN')}</span></div>
               <div><span className="text-muted-foreground block text-xs">Supply Type</span> <span className="font-medium">{ewb.supplyType}</span></div>
               <div><span className="text-muted-foreground block text-xs">Transaction Type</span> <span className="font-medium">{ewb.transactionType}</span></div>
             </div>
