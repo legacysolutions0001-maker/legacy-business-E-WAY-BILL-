@@ -7,9 +7,9 @@ import { logger } from "./lib/logger";
 export async function runMigrationsAndSeed() {
   logger.info("Running startup migrations...");
 
-  // ── companies ──────────────────────────────────────────────────────────────
+  // ewb_companies
   await db.execute(sql`
-    CREATE TABLE IF NOT EXISTS companies (
+    CREATE TABLE IF NOT EXISTS ewb_companies (
       id SERIAL PRIMARY KEY,
       code TEXT NOT NULL UNIQUE,
       name TEXT NOT NULL,
@@ -22,19 +22,11 @@ export async function runMigrationsAndSeed() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
-  // Ensure all columns exist even if the table already existed from another app
-  await db.execute(sql`ALTER TABLE companies ADD COLUMN IF NOT EXISTS gstin TEXT`);
-  await db.execute(sql`ALTER TABLE companies ADD COLUMN IF NOT EXISTS contact_email TEXT`);
-  await db.execute(sql`ALTER TABLE companies ADD COLUMN IF NOT EXISTS contact_phone TEXT`);
-  await db.execute(sql`ALTER TABLE companies ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE`);
-  await db.execute(sql`ALTER TABLE companies ADD COLUMN IF NOT EXISTS address TEXT`);
-  await db.execute(sql`ALTER TABLE companies ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`);
-  await db.execute(sql`ALTER TABLE companies ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`);
-  logger.info("companies table ready");
+  logger.info("ewb_companies ready");
 
-  // ── users ──────────────────────────────────────────────────────────────────
+  // ewb_users
   await db.execute(sql`
-    CREATE TABLE IF NOT EXISTS users (
+    CREATE TABLE IF NOT EXISTS ewb_users (
       id SERIAL PRIMARY KEY,
       username TEXT NOT NULL,
       password_hash TEXT NOT NULL,
@@ -45,17 +37,11 @@ export async function runMigrationsAndSeed() {
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
-  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT`);
-  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS company_id INTEGER`);
-  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'company_user'`);
-  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE`);
-  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`);
-  await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`);
-  logger.info("users table ready");
+  logger.info("ewb_users ready");
 
-  // ── ewaybills ──────────────────────────────────────────────────────────────
+  // ewb_ewaybills
   await db.execute(sql`
-    CREATE TABLE IF NOT EXISTS ewaybills (
+    CREATE TABLE IF NOT EXISTS ewb_ewaybills (
       id SERIAL PRIMARY KEY,
       ewb_number TEXT NOT NULL UNIQUE,
       company_id INTEGER NOT NULL,
@@ -101,11 +87,9 @@ export async function runMigrationsAndSeed() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
-  logger.info("ewaybills table ready");
+  logger.info("ewb_ewaybills ready");
 
-  logger.info("All tables verified");
-
-  // ── seed super admin ───────────────────────────────────────────────────────
+  // Seed super admin
   const existing = await db
     .select()
     .from(companiesTable)
