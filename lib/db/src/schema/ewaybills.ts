@@ -2,7 +2,7 @@ import { pgTable, serial, text, integer, numeric, timestamp } from "drizzle-orm/
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
-export const ewaybillsTable = pgTable("ewaybills", {
+export const ewaybillsTable = pgTable("ewb_ewaybills", {
   id: serial("id").primaryKey(),
   ewbNumber: text("ewb_number").notNull().unique(),
   companyId: integer("company_id").notNull(),
