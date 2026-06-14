@@ -2,6 +2,7 @@ import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import session from "express-session";
+import path from "path";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
@@ -48,5 +49,13 @@ app.use(
 );
 
 app.use("/api", router);
+
+if (isProduction) {
+  const frontendPath = path.resolve(process.cwd(), "artifacts/eway-bill/dist/public");
+  app.use(express.static(frontendPath));
+  app.get("/{*splat}", (_req, res) => {
+    res.sendFile(path.join(frontendPath, "index.html"));
+  });
+}
 
 export default app;
