@@ -3,13 +3,24 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: E-Way Bill Management System API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: companies
+    description: Company management
+  - name: users
+    description: User management
+  - name: ewaybills
+    description: E-Way Bill operations
+  - name: stats
+    description: Dashboard statistics
+
 paths:
   /healthz:
     get:
@@ -24,6 +35,375 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUser"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /companies:
+    get:
+      operationId: listCompanies
+      tags: [companies]
+      summary: List all companies
+      responses:
+        "200":
+          description: List of companies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Company"
+    post:
+      operationId: createCompany
+      tags: [companies]
+      summary: Create a new company
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompanyInput"
+      responses:
+        "201":
+          description: Company created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Company"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /companies/{id}:
+    get:
+      operationId: getCompany
+      tags: [companies]
+      summary: Get a company by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Company details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Company"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateCompany
+      tags: [companies]
+      summary: Update a company
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompanyUpdate"
+      responses:
+        "200":
+          description: Company updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Company"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteCompany
+      tags: [companies]
+      summary: Delete a company
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List users
+      parameters:
+        - name: companyId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserInput"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get a user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateUser
+      tags: [users]
+      summary: Update a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteUser
+      tags: [users]
+      summary: Delete a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /ewaybills:
+    get:
+      operationId: listEwaybills
+      tags: [ewaybills]
+      summary: List E-Way Bills
+      parameters:
+        - name: companyId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of E-Way Bills
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EwayBill"
+    post:
+      operationId: createEwaybill
+      tags: [ewaybills]
+      summary: Generate a new E-Way Bill
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EwayBillInput"
+      responses:
+        "201":
+          description: E-Way Bill created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EwayBill"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /ewaybills/{id}:
+    get:
+      operationId: getEwaybill
+      tags: [ewaybills]
+      summary: Get an E-Way Bill by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: E-Way Bill details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EwayBill"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteEwaybill
+      tags: [ewaybills]
+      summary: Delete an E-Way Bill
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /stats:
+    get:
+      operationId: getStats
+      tags: [stats]
+      summary: Get dashboard statistics
+      responses:
+        "200":
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +414,311 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    LoginInput:
+      type: object
+      required: [companyCode, username, password]
+      properties:
+        companyCode:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+
+    AuthUser:
+      type: object
+      required: [id, username, companyCode, companyName, role]
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        companyCode:
+          type: string
+        companyName:
+          type: string
+        role:
+          type: string
+
+    Company:
+      type: object
+      required: [id, code, name, isActive, createdAt]
+      properties:
+        id:
+          type: integer
+        code:
+          type: string
+        name:
+          type: string
+        address:
+          type: ["string", "null"]
+        gstin:
+          type: ["string", "null"]
+        contactEmail:
+          type: ["string", "null"]
+        contactPhone:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+
+    CompanyInput:
+      type: object
+      required: [code, name]
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        address:
+          type: string
+        gstin:
+          type: string
+        contactEmail:
+          type: string
+        contactPhone:
+          type: string
+
+    CompanyUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        gstin:
+          type: string
+        contactEmail:
+          type: string
+        contactPhone:
+          type: string
+        isActive:
+          type: boolean
+
+    User:
+      type: object
+      required: [id, username, companyId, companyCode, companyName, role, isActive, createdAt]
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        companyId:
+          type: integer
+        companyCode:
+          type: string
+        companyName:
+          type: string
+        role:
+          type: string
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+
+    UserInput:
+      type: object
+      required: [username, password, companyId, role]
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        companyId:
+          type: integer
+        role:
+          type: string
+
+    UserUpdate:
+      type: object
+      properties:
+        password:
+          type: string
+        role:
+          type: string
+        isActive:
+          type: boolean
+
+    EwayBill:
+      type: object
+      required: [id, ewbNumber, companyId, userId, generatedDate, validUpto, supplyType, transactionType, fromGstin, fromTradeName, fromAddr1, fromPincode, fromStateCode, toGstin, toTradeName, toAddr1, toPincode, toStateCode, itemName, hsnCode, quantity, unit, taxableValue, cgstRate, sgstRate, igstRate, totalValue, transporterDocNo, transporterDocDate, vehicleNo, vehicleType, transportMode, status, createdAt]
+      properties:
+        id:
+          type: integer
+        ewbNumber:
+          type: string
+        companyId:
+          type: integer
+        userId:
+          type: integer
+        generatedBy:
+          type: string
+        generatedDate:
+          type: string
+        validUpto:
+          type: string
+        supplyType:
+          type: string
+        transactionType:
+          type: string
+        fromGstin:
+          type: string
+        fromTradeName:
+          type: string
+        fromAddr1:
+          type: string
+        fromAddr2:
+          type: ["string", "null"]
+        fromPincode:
+          type: string
+        fromStateCode:
+          type: string
+        toGstin:
+          type: string
+        toTradeName:
+          type: string
+        toAddr1:
+          type: string
+        toAddr2:
+          type: ["string", "null"]
+        toPincode:
+          type: string
+        toStateCode:
+          type: string
+        itemName:
+          type: string
+        hsnCode:
+          type: string
+        quantity:
+          type: number
+        unit:
+          type: string
+        taxableValue:
+          type: number
+        cgstRate:
+          type: number
+        sgstRate:
+          type: number
+        igstRate:
+          type: number
+        cessRate:
+          type: ["number", "null"]
+        totalValue:
+          type: number
+        transporterDocNo:
+          type: string
+        transporterDocDate:
+          type: string
+        vehicleNo:
+          type: string
+        vehicleType:
+          type: string
+        transportMode:
+          type: string
+        distance:
+          type: ["integer", "null"]
+        transactionSubType:
+          type: ["string", "null"]
+        status:
+          type: string
+        createdAt:
+          type: string
+
+    EwayBillInput:
+      type: object
+      required: [supplyType, transactionType, fromGstin, fromTradeName, fromAddr1, fromPincode, fromStateCode, toGstin, toTradeName, toAddr1, toPincode, toStateCode, itemName, hsnCode, quantity, unit, taxableValue, cgstRate, sgstRate, igstRate, totalValue, transporterDocNo, transporterDocDate, vehicleNo, vehicleType, transportMode]
+      properties:
+        supplyType:
+          type: string
+        transactionType:
+          type: string
+        fromGstin:
+          type: string
+        fromTradeName:
+          type: string
+        fromAddr1:
+          type: string
+        fromAddr2:
+          type: string
+        fromPincode:
+          type: string
+        fromStateCode:
+          type: string
+        toGstin:
+          type: string
+        toTradeName:
+          type: string
+        toAddr1:
+          type: string
+        toAddr2:
+          type: string
+        toPincode:
+          type: string
+        toStateCode:
+          type: string
+        itemName:
+          type: string
+        hsnCode:
+          type: string
+        quantity:
+          type: number
+        unit:
+          type: string
+        taxableValue:
+          type: number
+        cgstRate:
+          type: number
+        sgstRate:
+          type: number
+        igstRate:
+          type: number
+        cessRate:
+          type: number
+        totalValue:
+          type: number
+        transporterDocNo:
+          type: string
+        transporterDocDate:
+          type: string
+        vehicleNo:
+          type: string
+        vehicleType:
+          type: string
+        transportMode:
+          type: string
+        distance:
+          type: integer
+        transactionSubType:
+          type: string
+
+    DashboardStats:
+      type: object
+      required: [totalCompanies, totalUsers, totalEwaybills, recentEwaybills]
+      properties:
+        totalCompanies:
+          type: integer
+        totalUsers:
+          type: integer
+        totalEwaybills:
+          type: integer
+        recentEwaybills:
+          type: array
+          items:
+            $ref: "#/components/schemas/EwayBill"
