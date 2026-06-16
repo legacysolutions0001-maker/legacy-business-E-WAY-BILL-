@@ -1,16 +1,10 @@
 import { Router } from "express";
 import { db, companiesTable, usersTable, ewaybillsTable } from "@workspace/db";
 import { count, eq, desc } from "drizzle-orm";
+import { requireAuth } from "../middlewares/auth";
 
 const router = Router();
 
-function requireAuth(req: any, res: any, next: any) {
-  if (!req.session.userId) {
-    res.status(401).json({ error: "Not authenticated" });
-    return;
-  }
-  next();
-}
 
 router.get("/stats", requireAuth, async (req, res): Promise<void> => {
   const [companiesCount] = await db.select({ count: count() }).from(companiesTable);
