@@ -1,16 +1,10 @@
 import { Router } from "express";
 import { db, ewaybillsTable, companiesTable, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { requireAuth } from "../middlewares/auth";
 
 const router = Router();
 
-function requireAuth(req: any, res: any, next: any) {
-  if (!req.session.userId) {
-    res.status(401).json({ error: "Not authenticated" });
-    return;
-  }
-  next();
-}
 
 function generateEwbNumber(): string {
   const timestamp = Date.now().toString();
