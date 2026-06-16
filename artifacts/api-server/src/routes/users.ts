@@ -2,28 +2,11 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { db, usersTable, companiesTable } from "@workspace/db";
 import { eq, and } from "drizzle-orm";
+import { requireAuth, requireSuperAdmin } from "../middlewares/auth";
 
 const router = Router();
 
-function requireAuth(req: any, res: any, next: any) {
-  if (!req.session.userId) {
-    res.status(401).json({ error: "Not authenticated" });
-    return;
-  }
-  next();
-}
 
-function requireSuperAdmin(req: any, res: any, next: any) {
-  if (!req.session.userId) {
-    res.status(401).json({ error: "Not authenticated" });
-    return;
-  }
-  if (req.session.role !== "super_admin") {
-    res.status(403).json({ error: "Forbidden: super admin only" });
-    return;
-  }
-  next();
-}
 
 async function formatUser(user: typeof usersTable.$inferSelect) {
   const [company] = await db
