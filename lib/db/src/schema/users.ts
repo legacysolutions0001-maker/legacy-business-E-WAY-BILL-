@@ -6,7 +6,7 @@ export const usersTable = pgTable("ewb_users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull(),
   passwordHash: text("password_hash").notNull(),
-  companyId: integer("company_id").notNull(),
+  companyId: integer("company_id"), // nullable for super_admin
   role: text("role").notNull().default("company_user"), // 'super_admin' | 'company_user'
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

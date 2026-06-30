@@ -24,19 +24,25 @@ export async function runMigrationsAndSeed() {
   `);
   logger.info("ewb_companies ready");
 
-  // ewb_users
+  // ewb_users — company_id nullable (super_admin has no company)
   await db.execute(sql`
     CREATE TABLE IF NOT EXISTS ewb_users (
       id SERIAL PRIMARY KEY,
       username TEXT NOT NULL,
       password_hash TEXT NOT NULL,
-      company_id INTEGER NOT NULL,
+      company_id INTEGER,
       role TEXT NOT NULL DEFAULT 'company_user',
       is_active BOOLEAN NOT NULL DEFAULT TRUE,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
+
+  // Make company_id nullable if it was previously NOT NULL (migration fix)
+  await db.execute(sql`
+    ALTER TABLE ewb_users ALTER COLUMN company_id DROP NOT NULL
+  `).catch(() => { /* already nullable */ });
+
   logger.info("ewb_users ready");
 
   // ewb_ewaybills
@@ -89,35 +95,29 @@ export async function runMigrationsAndSeed() {
   `);
   logger.info("ewb_ewaybills ready");
 
-  // Seed super admin
-  const existing = await db
+  // Seed / ensure super admin (no company required — uses SUPER as company code)
+  const passwordHash = await bcrypt.hash("Bhullar_01", 10);
+  const existingAdmin = await db
     .select()
-    .from(companiesTable)
-    .where(sql`code = 'bhullar'`);
+    .from(usersTable)
+    .where(sql`username = 'bhullar01' AND role = 'super_admin'`);
 
-  if (existing.length === 0) {
-    const inserted = await db
-      .insert(companiesTable)
-      .values({
-        code: "bhullar",
-        name: "Bhullar Admin",
-        address: "Admin HQ",
-        isActive: true,
-      })
-      .returning();
-
-    const company = inserted[0];
-    const passwordHash = await bcrypt.hash("Bhullar_01", 10);
+  if (existingAdmin.length === 0) {
     await db.insert(usersTable).values({
       username: "bhullar01",
       passwordHash,
-      companyId: company.id,
+      companyId: null as any,
       role: "super_admin",
       isActive: true,
     });
-    logger.info("Super admin seeded: bhullar01");
+    logger.info("Super admin seeded: bhullar01 / Bhullar_01 (login with company code: SUPER)");
   } else {
-    logger.info("Super admin already exists — skipping seed");
+    // Always keep password in sync
+    await db.execute(sql`
+      UPDATE ewb_users SET password_hash = ${passwordHash}, is_active = true
+      WHERE username = 'bhullar01' AND role = 'super_admin'
+    `);
+    logger.info("Super admin password synced");
   }
 
   logger.info("Startup migrations complete");
