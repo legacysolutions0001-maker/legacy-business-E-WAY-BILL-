@@ -13,7 +13,7 @@ router.get("/stats", requireAuth, async (req, res): Promise<void> => {
   let billsCount;
   let recentBills;
 
-  if (req.session.role === "super_admin") {
+  if (req.auth!.role === "super_admin") {
     [billsCount] = await db.select({ count: count() }).from(ewaybillsTable);
     recentBills = await db
       .select()
@@ -24,11 +24,11 @@ router.get("/stats", requireAuth, async (req, res): Promise<void> => {
     [billsCount] = await db
       .select({ count: count() })
       .from(ewaybillsTable)
-      .where(eq(ewaybillsTable.companyId, req.session.companyId!));
+      .where(eq(ewaybillsTable.companyId, req.auth!.companyId!));
     recentBills = await db
       .select()
       .from(ewaybillsTable)
-      .where(eq(ewaybillsTable.companyId, req.session.companyId!))
+      .where(eq(ewaybillsTable.companyId, req.auth!.companyId!))
       .orderBy(desc(ewaybillsTable.createdAt))
       .limit(10);
   }
