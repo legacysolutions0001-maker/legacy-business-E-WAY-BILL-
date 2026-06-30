@@ -1,17 +1,28 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { db, usersTable, companiesTable } from "@workspace/db";
-import { eq, and, isNull } from "drizzle-orm";
-
-declare module "express-session" {
-  interface SessionData {
-    userId: number;
-    companyId: number | null;
-    role: string;
-  }
-}
+import { eq, and } from "drizzle-orm";
+import { signToken, verifyToken, requireAuth, requireSuperAdmin } from "../middlewares/auth";
 
 const router = Router();
+
+const COOKIE_NAME = "ewb_token";
+const isProduction = process.env.NODE_ENV === "production";
+
+const COOKIE_OPTS = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? ("none" as const) : ("lax" as const),
+  path: "/",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
+const COOKIE_CLEAR_OPTS = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? ("none" as const) : ("lax" as const),
+  path: "/",
+};
 
 router.post("/auth/login", async (req, res): Promise<void> => {
   const { companyCode, username, password } = req.body;
@@ -41,16 +52,15 @@ router.post("/auth/login", async (req, res): Promise<void> => {
       return;
     }
 
-    req.session.userId = user.id;
-    req.session.companyId = null;
-    req.session.role = user.role;
-
+    const token = signToken({ userId: user.id, role: user.role, companyId: null, username: user.username });
+    res.cookie(COOKIE_NAME, token, COOKIE_OPTS);
     res.json({
       id: user.id,
       username: user.username,
       companyCode: "SUPER",
       companyName: "Super Admin",
       role: user.role,
+      token,
     });
     return;
   }
@@ -82,42 +92,34 @@ router.post("/auth/login", async (req, res): Promise<void> => {
     return;
   }
 
-  req.session.userId = user.id;
-  req.session.companyId = company.id;
-  req.session.role = user.role;
-
+  const token = signToken({ userId: user.id, role: user.role, companyId: company.id, username: user.username });
+  res.cookie(COOKIE_NAME, token, COOKIE_OPTS);
   res.json({
     id: user.id,
     username: user.username,
     companyCode: company.code,
     companyName: company.name,
     role: user.role,
+    token,
   });
 });
 
 router.post("/auth/logout", async (req, res): Promise<void> => {
-  req.session.destroy(() => {
-    res.json({ message: "Logged out" });
-  });
+  res.clearCookie(COOKIE_NAME, COOKIE_CLEAR_OPTS);
+  res.json({ message: "Logged out" });
 });
 
-router.get("/auth/me", async (req, res): Promise<void> => {
-  if (!req.session.userId) {
-    res.status(401).json({ error: "Not authenticated" });
-    return;
-  }
-
+router.get("/auth/me", requireAuth, async (req, res): Promise<void> => {
   const [user] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.id, req.session.userId));
+    .where(eq(usersTable.id, req.auth!.userId));
 
   if (!user) {
     res.status(401).json({ error: "User not found" });
     return;
   }
 
-  // Super admin has no company
   if (user.role === "super_admin") {
     res.json({
       id: user.id,
@@ -132,7 +134,7 @@ router.get("/auth/me", async (req, res): Promise<void> => {
   const [company] = await db
     .select()
     .from(companiesTable)
-    .where(eq(companiesTable.id, user.companyId));
+    .where(eq(companiesTable.id, user.companyId!));
 
   if (!company) {
     res.status(401).json({ error: "Company not found" });
