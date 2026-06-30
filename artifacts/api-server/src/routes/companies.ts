@@ -4,17 +4,7 @@ import { eq } from "drizzle-orm";
 
 const router = Router();
 
-function requireSuperAdmin(req: any, res: any, next: any) {
-  if (!req.session.userId) {
-    res.status(401).json({ error: "Not authenticated" });
-    return;
-  }
-  if (req.session.role !== "super_admin") {
-    res.status(403).json({ error: "Forbidden: super admin only" });
-    return;
-  }
-  next();
-}
+
 
 router.get("/companies", requireSuperAdmin, async (_req, res): Promise<void> => {
   const companies = await db
