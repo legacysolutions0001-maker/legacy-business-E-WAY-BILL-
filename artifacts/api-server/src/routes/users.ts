@@ -29,7 +29,7 @@ router.get("/users", requireAuth, async (req, res): Promise<void> => {
   const { companyId } = req.query;
 
   let users;
-  if (req.session.role === "super_admin") {
+  if (req.auth!.role === "super_admin") {
     if (companyId) {
       const cid = parseInt(companyId as string, 10);
       users = await db.select().from(usersTable).where(eq(usersTable.companyId, cid));
@@ -40,7 +40,7 @@ router.get("/users", requireAuth, async (req, res): Promise<void> => {
     users = await db
       .select()
       .from(usersTable)
-      .where(eq(usersTable.companyId, req.session.companyId!));
+      .where(eq(usersTable.companyId, req.auth!.companyId!));
   }
 
   const formatted = await Promise.all(users.map(formatUser));
@@ -96,7 +96,7 @@ router.get("/users/:id", requireAuth, async (req, res): Promise<void> => {
     return;
   }
 
-  if (req.session.role !== "super_admin" && user.companyId !== req.session.companyId) {
+  if (req.auth!.role !== "super_admin" && user.companyId !== req.auth!.companyId) {
     res.status(403).json({ error: "Forbidden" });
     return;
   }
