@@ -31,7 +31,7 @@ router.get("/ewaybills", requireAuth, async (req, res): Promise<void> => {
   const { companyId } = req.query;
 
   let bills;
-  if (req.session.role === "super_admin") {
+  if (req.auth!.role === "super_admin") {
     if (companyId) {
       const cid = parseInt(companyId as string, 10);
       bills = await db.select().from(ewaybillsTable).where(eq(ewaybillsTable.companyId, cid));
@@ -42,7 +42,7 @@ router.get("/ewaybills", requireAuth, async (req, res): Promise<void> => {
     bills = await db
       .select()
       .from(ewaybillsTable)
-      .where(eq(ewaybillsTable.companyId, req.session.companyId!));
+      .where(eq(ewaybillsTable.companyId, req.auth!.companyId!));
   }
 
   res.json(bills.map(formatBill));
@@ -72,7 +72,7 @@ router.post("/ewaybills", requireAuth, async (req, res): Promise<void> => {
   const [user] = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.id, req.session.userId!));
+    .where(eq(usersTable.id, req.auth!.userId!));
 
   const ewbNumber = generateEwbNumber();
   const now = new Date();
@@ -88,8 +88,8 @@ router.post("/ewaybills", requireAuth, async (req, res): Promise<void> => {
     .insert(ewaybillsTable)
     .values({
       ewbNumber,
-      companyId: req.session.companyId!,
-      userId: req.session.userId!,
+      companyId: req.auth!.companyId!,
+      userId: req.auth!.userId!,
       generatedBy: user?.username ?? "unknown",
       generatedDate,
       validUpto,
@@ -145,7 +145,7 @@ router.get("/ewaybills/:id", requireAuth, async (req, res): Promise<void> => {
     return;
   }
 
-  if (req.session.role !== "super_admin" && bill.companyId !== req.session.companyId) {
+  if (req.auth!.role !== "super_admin" && bill.companyId !== req.auth!.companyId) {
     res.status(403).json({ error: "Forbidden" });
     return;
   }
