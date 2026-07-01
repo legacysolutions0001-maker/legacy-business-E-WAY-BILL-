@@ -95,27 +95,28 @@ export async function runMigrationsAndSeed() {
   `);
   logger.info("ewb_ewaybills ready");
 
-  // Seed / ensure super admin (no company required — uses SUPER as company code)
-  const passwordHash = await bcrypt.hash("Bhullar_01", 10);
+  // Seed / ensure super admin
+  const saUsername = (process.env.SUPER_ADMIN_USERNAME || "bhullar01").toLowerCase();
+  const saPassword = process.env.SUPER_ADMIN_PASSWORD || "Bhullar_01";
+  const passwordHash = await bcrypt.hash(saPassword, 10);
   const existingAdmin = await db
     .select()
     .from(usersTable)
-    .where(sql`username = 'bhullar01' AND role = 'super_admin'`);
+    .where(sql`username = ${saUsername} AND role = 'super_admin'`);
 
   if (existingAdmin.length === 0) {
     await db.insert(usersTable).values({
-      username: "bhullar01",
+      username: saUsername,
       passwordHash,
       companyId: null as any,
       role: "super_admin",
       isActive: true,
     });
-    logger.info("Super admin seeded: bhullar01 / Bhullar_01 (login with company code: SUPER)");
+    logger.info(`Super admin seeded: ${saUsername}`);
   } else {
-    // Always keep password in sync
     await db.execute(sql`
       UPDATE ewb_users SET password_hash = ${passwordHash}, is_active = true
-      WHERE username = 'bhullar01' AND role = 'super_admin'
+      WHERE username = ${saUsername} AND role = 'super_admin'
     `);
     logger.info("Super admin password synced");
   }
