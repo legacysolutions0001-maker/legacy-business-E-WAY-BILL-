@@ -34,8 +34,9 @@ router.post("/auth/login", async (req, res): Promise<void> => {
 
   const upperCode = (companyCode || "").trim().toUpperCase();
 
-  // Super admin bypass — company code "SUPER" or empty
-  if (upperCode === "SUPER" || !upperCode) {
+  // Super admin bypass — company code "SUPER", empty, or env-configured code
+  const superCode = (process.env.EWAY_BILL_COMPANY_CODE || "SUPER").trim().toUpperCase();
+  if (upperCode === "SUPER" || upperCode === superCode || !upperCode) {
     const [user] = await db
       .select()
       .from(usersTable)
