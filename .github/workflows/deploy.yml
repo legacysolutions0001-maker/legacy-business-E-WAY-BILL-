@@ -30,9 +30,15 @@ jobs:
           secrets: |
             DATABASE_URL
             SESSION_SECRET
+            SUPER_ADMIN_USERNAME
+            SUPER_ADMIN_PASSWORD
+            EWAY_BILL_COMPANY_CODE
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          SUPER_ADMIN_USERNAME: ${{ secrets.SUPER_ADMIN_USERNAME }}
+          SUPER_ADMIN_PASSWORD: ${{ secrets.SUPER_ADMIN_PASSWORD }}
+          EWAY_BILL_COMPANY_CODE: ${{ secrets.EWAY_BILL_COMPANY_CODE }}
 
   deploy-frontend:
     name: Deploy Frontend to Cloudflare Pages
